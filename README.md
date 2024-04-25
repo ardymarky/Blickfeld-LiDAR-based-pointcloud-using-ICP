@@ -9,7 +9,7 @@ This github is to document the process of setting up Blickfeld Outdoor Cube 1 Li
 4.  Install KissICP on post-processing computer
 5.  Run Rviz2 and view bag data
 
-
+## Step 1: Ros2 Foxy on Raspberry Pi 4
 ```console
 $ whoami
 ```
