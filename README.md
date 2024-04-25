@@ -29,7 +29,7 @@ $ cd /${BSL_directory}
 $ git checkout ba53a9d (replace ba53a9d with desired branch)
 ```
 
-### Static IP Address
+#### Static IP Address
 
 Documentation: https://docs.blickfeld.com/cube/latest/getting_started.
 
@@ -50,6 +50,8 @@ network:
 ```
 
 Replace `xxx` with any port number that is not 0, 255, or 26. Replace the gateway4 IP address with the IP address on the back of the newtwork switch or router. Replace `eth0` with the name of the ethernet cable if not different
+
+#### Capture Data
 
 After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic. Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
 
