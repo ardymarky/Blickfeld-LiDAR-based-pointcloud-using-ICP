@@ -29,11 +29,8 @@ $ cd /${BSL_directory}
 $ git checkout ba53a9d (replace ba53a9d with desired branch)
 ```
 
-After configuring the driver, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic.
+After configuring the driver, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic. Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
 
 ```console
-ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
-```
-```console
-$ whoami
+$ ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
 ```
