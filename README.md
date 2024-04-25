@@ -10,6 +10,9 @@ This github is to document the process of setting up Blickfeld Outdoor Cube 1 Li
 5.  Run Rviz2 and view bag data
 
 ## Step 1: Ros2 Foxy on Raspberry Pi 4
+
+The Cube 1's provided driver requires a Ros2 Foxy Distribution. This can be accomplished using Ros2's documentation: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html.
+
 ```console
 $ whoami
 ```
