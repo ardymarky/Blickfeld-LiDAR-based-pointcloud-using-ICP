@@ -1,8 +1,9 @@
 # Blickfeld
-Blickfeld pointcloud data collection and processing
+## Blickfeld pointcloud data collection and processing
 
 This github is to document the process of setting up Blickfeld Outdoor Cube 1 LiDAR system to record and visualize pointcloud data through ROS2. \
-Blickfeld Cube 1 Manual: https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf \
+Blickfeld Cube 1 Manual: https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf
+
 ### Main steps:
 1.  Configure a Raspberry Pi 4 to run Ros2 Foxy
 2.  Setup the Blickfeld Driver and record bag data
@@ -50,6 +51,7 @@ network:
 ```
 
 Replace `xxx` with any port number that is not 0, 255, or 26. Replace the gateway4 IP address with the IP address on the back of the newtwork switch or router. Replace `eth0` with the name of the ethernet cable if different.
+After making changes to the yaml file, run `sudo netplan apply` to apply the changes.
 
 #### Capture Data
 
