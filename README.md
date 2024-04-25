@@ -16,7 +16,7 @@ Preliminary steps to installing Ros2 include flashing an Ubuntu 20.04 image on t
 
 ## Step 2: Blickfeld Driver
 
-Driver: https://www.blickfeld.com/resources/
+Driver: https://www.blickfeld.com/resources/ \
 Installation Process: https://docs.blickfeld.com/cube/latest/external/ros/driver-v2/README.html
 
 Once Ros2 Foxy has been installed on the pi, the next step is the blickfeld driver. Before building using "colcon", make sure to extract the driver and move it to the /${workspace}/src directory.
