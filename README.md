@@ -1,13 +1,13 @@
 # Blickfeld
 Blickfeld pointcloud data collection and processing
 
-This github is to document the process of setting up Blickfeld Outdoor Cube 1 LiDAR system to record and visualize pointcloud data through ROS2.
+This github is to document the process of setting up Blickfeld Outdoor Cube 1 LiDAR system to record and visualize pointcloud data through ROS2. \
+Blickfeld Cube 1 Manual: https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf \
 ### Main steps:
 1.  Configure a Raspberry Pi 4 to run Ros2 Foxy
-2.  Setup the Blickfeld Driver on the pi
-3.  Record Ros2 Bag Data
-4.  Install KissICP on post-processing computer
-5.  Run Rviz2 and view bag data
+2.  Setup the Blickfeld Driver and record bag data
+3.  Install KissICP on post-processing computer
+4.  Run Rviz2 and view bag data
 
 ## Step 1: Ros2 Foxy on Raspberry Pi 4
 
@@ -49,7 +49,7 @@ network:
         addresses: [8.8.8.8, 8.8.4.4]  # DNS servers
 ```
 
-Replace `xxx` with any port number that is not 0, 255, or 26. Replace the gateway4 IP address with the IP address on the back of the newtwork switch or router. Replace `eth0` with the name of the ethernet cable if not different
+Replace `xxx` with any port number that is not 0, 255, or 26. Replace the gateway4 IP address with the IP address on the back of the newtwork switch or router. Replace `eth0` with the name of the ethernet cable if different.
 
 #### Capture Data
 
@@ -58,5 +58,9 @@ After configuring the driver and ethernet, run the Blickfeld Ros2 component usin
 ```console
 $ ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
 ```
+
+## Step 3: Install KissICP
+
+To post-process the bag file taken from the Blickfeld, KissICP is used because it has 
 
 LIBGL_ALWAYS_SOFTWARE=1
