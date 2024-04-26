@@ -79,7 +79,7 @@ source ./install/setup.bash
 
 ## Step 4: Rviz2 Visualizer
 
-Walkthrough for many Ros2 bag commands: https://docs.ros.org/en/foxy/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.html
+Walkthrough for many Ros2 bag commands: https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.html
 
 It is recommended to first launch the node without defining the bagfile. This should open Rviz2 and listen for a bagfile which can be played on a different shell. Should Rviz2 fail to open, it may be neccessary to prepend `
 LIBGL_ALWAYS_SOFTWARE=1` to the start of the console command.
