@@ -23,11 +23,11 @@ Installation Process: https://docs.blickfeld.com/cube/latest/external/ros/driver
 
 Once Ros2 Foxy has been installed on the pi, the next step is the blickfeld driver. Before building using "colcon", make sure to extract the driver and move it to the /${workspace}/src directory.
 
-IMPORTANT: double check the Cube1 version for the BSL dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found at https://github.com/Blickfeld/blickfeld-scanner-lib/releases.
+IMPORTANT: double check the Cube1 version for the BSL dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found at https://github.com/Blickfeld/blickfeld-scanner-lib/releases. Replace ba53a9d with desired branch/release.
 
 ```console
 cd /${BSL_directory}
-git checkout ba53a9d (replace ba53a9d with desired branch)
+git checkout ba53a9d
 ```
 
 #### Static IP Address
