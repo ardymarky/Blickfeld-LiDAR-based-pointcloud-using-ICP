@@ -1,7 +1,12 @@
+<style>
+/* Custom styling for code blocks */
 pre {
     background-color: black;
     color: white;
 }
+</style>
+
+
 
 
 # Blickfeld
