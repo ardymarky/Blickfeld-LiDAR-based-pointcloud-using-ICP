@@ -26,8 +26,8 @@ Once Ros2 Foxy has been installed on the pi, the next step is the blickfeld driv
 IMPORTANT: double check the Cube1 version for the BSL dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found at https://github.com/Blickfeld/blickfeld-scanner-lib/releases.
 
 ```console
-$ cd /${BSL_directory}
-$ git checkout ba53a9d (replace ba53a9d with desired branch)
+cd /${BSL_directory}
+git checkout ba53a9d (replace ba53a9d with desired branch)
 ```
 
 #### Static IP Address
@@ -58,7 +58,7 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic. Press Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
 
 ```console
-$ ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
+ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
 ```
 
 ## Step 3: Install KissICP
@@ -71,9 +71,9 @@ Ros2 Wrapper: https://github.com/PRBonn/kiss-icp/blob/main/ros/README.md
 Kiss-ICP does not require the Ros2 Foxy Distribution so Ros2 Humble can be used on Ubuntu 22.04. Use WSL (Windows System Linux) to get Ros2 humble setup on a windows machine. Once Ros2 Humble is installed, build Kiss-ICP using:
 
 ```console
-$ git clone https://github.com/PRBonn/kiss-icp
-$ colcon build
-$ source ./install/setup.bash
+git clone https://github.com/PRBonn/kiss-icp
+colcon build
+source ./install/setup.bash
 ```
 
 ## Step 4: Rviz2 Visualizer
