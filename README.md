@@ -55,7 +55,7 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 
 #### Capture Data
 
-After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic. Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
+After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. Be sure to publish imu topic along with pointcloud2 topic. Press Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
 
 ```console
 $ ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
@@ -63,6 +63,31 @@ $ ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDr
 
 ## Step 3: Install KissICP
 
-To post-process the bag file taken from the Blickfeld, KissICP is used because it has 
+To post-process the bag file taken from the Blickfeld, the Kiss-ICP Lidar Odometry Pipeline is used because of its Ros2 support
 
-LIBGL_ALWAYS_SOFTWARE=1
+Kiss-ICP: https://github.com/PRBonn/kiss-icp/tree/main \
+Ros2 Wrapper: https://github.com/PRBonn/kiss-icp/blob/main/ros/README.md
+
+Kiss-ICP does not require the Ros2 Foxy Distribution so Ros2 Humble can be used on Ubuntu 22.04. Use WSL (Windows System Linux) to get Ros2 humble setup on a windows machine. Once Ros2 Humble is installed, build Kiss-ICP using:
+
+```console
+$ git clone https://github.com/PRBonn/kiss-icp
+$ colcon build
+$ source ./install/setup.bash
+```
+
+## Step 4: Rviz2 Visualizer
+
+It is recommended to first launch the node without defining the bagfile. This should open Rviz2 and listen for a bagfile which can be played on a different shell. Should Rviz2 fail to open, it may be neccessary to prepend `
+LIBGL_ALWAYS_SOFTWARE=1` to the start of the console command.
+
+```console
+ros2 launch kiss_icp odometry.launch.py topic:=/bf_lidar/point_cloud_out
+```
+
+If the topic name is unknown, simply run `ros2 bag list <path>*.bag`, where <path>* is the path to the bag file.
+Once the listener and Rviz2 are opened, open a different shell and run
+
+```console
+ros2 bag play <path>*.bag
+```
