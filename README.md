@@ -102,3 +102,11 @@ Once the listener and Rviz2 are running, open a different shell and run
 ```console
 ros2 bag play <path>*.bag
 ```
+
+## Extra Steps
+
+To execute a python script on bootup, `run crontab -e` and add the code below.
+
+```crontab
+@reboot /path/to/script
+```
