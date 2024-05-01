@@ -25,17 +25,23 @@ def execute_additional_actions():
         # Stop recording (terminate the Python script if it's running)
         # recording_process.terminate()
 
+def ping_ip(ip_address):
+    result = subprocess.run(['ping', '-c', '1', ip_address], stdout=subprocess.PIPE)
+    return result.returncode == 0
+
 try:
     while True:
+        if ping_ip("192.168.26.26"):
+            print("connected to ip address)
         # Check the state of the GPIO pin
-        if GPIO.input(relay_pin) != relay_state:
-            # Relay state has changed
-            relay_state = GPIO.input(relay_pin)
-            execute_additional_actions()
-        
-        # Add any additional actions or processing here
-        
-        time.sleep(0.1)  # Add a short delay to reduce CPU usage
+            if GPIO.input(relay_pin) != relay_state:
+                # Relay state has changed
+                relay_state = GPIO.input(relay_pin)
+                execute_additional_actions()
+            
+            # Add any additional actions or processing here
+            
+            time.sleep(0.1)  # Add a short delay to reduce CPU usage
         
 except KeyboardInterrupt:
     # Clean up GPIO on keyboard interrupt
