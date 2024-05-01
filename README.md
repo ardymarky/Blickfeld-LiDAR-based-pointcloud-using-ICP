@@ -110,3 +110,9 @@ To execute a python script on bootup, `run crontab -e` and add the code below.
 ```crontab
 @reboot /path/to/script
 ```
+
+## Future Steps
+
+1.  Configure pi to run script on boot
+2.  Set up relay switch connection
+3.  SSH through LAN on the pi
