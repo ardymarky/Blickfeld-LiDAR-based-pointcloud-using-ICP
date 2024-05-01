@@ -55,10 +55,17 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 
 #### Capture Data
 
-After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. Be sure to publish an imu topic along with the pointcloud2 topic. Press Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
+After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. This will begin to send Ros PointCloud2 messages.
 
 ```console
-ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=cube-XXXXXXXXX -p publish_ambient_light:=true -p publish_intensities:=false -p publish_imu:=true
+source ${colcon dir}/install/setup.bash
+ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26 -p publish_intensities:=true
+```
+In a seperate terminal, setup a ros2 listener to record the PointCloud2 data to a bagfile. After the scan has been completed, press Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
+
+```console
+source ${colcon dir}/install/setup.bash
+ros2 bag record /bf_lidar/point_cloud_out
 ```
 
 ## Step 3: Install KissICP
@@ -85,6 +92,7 @@ It is recommended to first launch the node without defining the bagfile. This sh
 LIBGL_ALWAYS_SOFTWARE=1` to the start of the console command.
 
 ```console
+source ./${Kiss Dir}/install/setup.bash
 ros2 launch kiss_icp odometry.launch.py topic:=/bf_lidar/point_cloud_out
 ```
 
