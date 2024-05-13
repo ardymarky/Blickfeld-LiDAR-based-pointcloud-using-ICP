@@ -12,19 +12,26 @@ GPIO.setup(relay_pin, GPIO.IN)
 # Variable to track the state of the relay
 relay_state = GPIO.input(relay_pin)
 
-ros2_command = ["ros2", "run", "blickfeld_driver", "blickfeld_driver_node",
-                "--ros-args", "-p", "host:=cube-192.168.26.26", "--remap", "__node:=bf_lidar"]
+ros2_command = "ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26"
 
-combined_command = "bash -c 'source /opt/src/file.bash && " + " ".join(ros2_command) + "'"
+#ros2_command = "ros2", "run", "blickfeld_driver", "blickfeld_driver_node",
+#                "--ros-args", "-p", "host:=cube-192.168.26.26", "--remap", "__node:=bf_lidar"]
+
+combined_command = "bash -c 'source blickfeld/install/setup.bash && " + ros2_command + "'"
+save_command = "bash -c 'source blickfeld/install/setup.bash && ros2 bag record /bf_lidar/point_cloud_out'"
 
 # Function to execute additional actions (e.g., start/stop recording)
 def execute_additional_actions():
     global recording_process
+    global reading_process
     # Check if relay is turned on
     if GPIO.input(relay_pin) == GPIO.HIGH:
         print("Relay switched ON. Starting recording...")
         # Start recording (execute your Python script)
-        recording_process = subprocess.Popen(combined_command, shell=True)
+        recording_process = subprocess.Popen(["gnome-terminal", "--", combined_command])
+        time.pause(3)
+        print("Starting to save...")
+        reading_process = subprocess.Popen(["gnome-terminal", "--", save_command])
     else:
         print("Relay switched OFF. Stopping recording...")
         # Stop recording (terminate the Python script if it's running)
