@@ -18,12 +18,13 @@ def execute_additional_actions():
     # Check if relay is turned on
     if GPIO.input(relay_pin) == GPIO.HIGH:
         print("Relay switched ON. Starting recording...")
-        # Start recording (execute your Python script)
-        # recording_process = subprocess.Popen(["python3", "your_script.py"])
+        # Start recording (execute your Python script)        subprocess.run(["sudo", "ls", "-l", "-a"])
+        subprocess.run(["source", "blickfeld/install/setup.bash"]
+        recording_process = subprocess.Popen(["ros2", "run", "blickfeld_driver", "blickfeld_driver_node", "--ros-args", "-p", "host:=192.168.26.26", "--remap", "__node:=bf_lidar"])
     else:
         print("Relay switched OFF. Stopping recording...")
         # Stop recording (terminate the Python script if it's running)
-        # recording_process.terminate()
+        recording_process.terminate()
 
 def ping_ip(ip_address):
     result = subprocess.run(['ping', '-c', '1', ip_address], stdout=subprocess.PIPE)
