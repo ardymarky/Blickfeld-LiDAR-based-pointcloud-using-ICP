@@ -31,11 +31,14 @@ def ping_ip(ip_address):
 
 while ping_ip("192.168.26.26") == 0:
     print("waiting for LAN connection")
-    time.sleep(5)
+    with open('/sys/class/leds/led0/brightness', 'w') as file:
+        file.write('1')
 
 print("connected to ip address)
 try:
-    while True:
+    while True:    
+        with open('/sys/class/leds/led0/brightness', 'w') as file:
+            file.write('1')
     # Check the state of the GPIO pin
         if GPIO.input(relay_pin) != relay_state:
             # Relay state has changed
