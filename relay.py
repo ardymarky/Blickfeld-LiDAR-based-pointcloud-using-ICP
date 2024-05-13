@@ -19,7 +19,7 @@ def execute_additional_actions():
     if GPIO.input(relay_pin) == GPIO.HIGH:
         print("Relay switched ON. Starting recording...")
         # Start recording (execute your Python script)        subprocess.run(["sudo", "ls", "-l", "-a"])
-        subprocess.run(["source", "blickfeld/install/setup.bash"]
+        subprocess.run(["source", "blickfeld/install/setup.bash"])
         recording_process = subprocess.Popen(["ros2", "run", "blickfeld_driver", "blickfeld_driver_node", "--ros-args", "-p", "host:=192.168.26.26", "--remap", "__node:=bf_lidar"])
     else:
         print("Relay switched OFF. Stopping recording...")
@@ -35,7 +35,7 @@ while ping_ip("192.168.26.26") == 0:
     with open('/sys/class/leds/led0/brightness', 'w') as file:
         file.write('1')
 
-print("connected to ip address)
+print("connected to ip address")
 try:
     while True:    
         with open('/sys/class/leds/led0/brightness', 'w') as file:
