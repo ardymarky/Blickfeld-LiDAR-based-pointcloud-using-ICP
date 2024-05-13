@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /path/to/your/script.py
+ExecStart=/usr/bin/python3 ~/relay.py
 Restart=on-failure
 RestartSec=5s
 
