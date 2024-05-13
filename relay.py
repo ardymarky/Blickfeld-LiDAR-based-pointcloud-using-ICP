@@ -15,7 +15,7 @@ relay_state = GPIO.input(relay_pin)
 ros2_command = ["ros2", "run", "blickfeld_driver", "blickfeld_driver_node",
                 "--ros-args", "-p", "host:=cube-192.168.26.26", "--remap", "__node:=bf_lidar"]
 
-combined_command = "source /opt/src/file.bash && " + " ".join(ros2_command)
+combined_command = "bash -c 'source /opt/src/file.bash && " + " ".join(ros2_command) + "'"
 
 # Function to execute additional actions (e.g., start/stop recording)
 def execute_additional_actions():
