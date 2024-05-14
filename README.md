@@ -45,12 +45,13 @@ network:
     eth0:
       addresses:
         - 192.168.26.xxx/24  # Static IP address
-      gateway4: 192.168.26.1  # Router's IP address
       nameservers:
         addresses: [8.8.8.8, 8.8.4.4]  # DNS servers
+      dhcp4: true
+      optional: true
 ```
 
-Replace `xxx` with any port number that is not 0, 255, or 26. Replace the gateway4 IP address with the IP address on the back of the newtwork switch or router. Replace `eth0` with the name of the ethernet cable if different.
+Replace `xxx` with any port number that is not 0, 255, or 26. Replace `eth0` with the name of the ethernet cable if different. Alternatively, replace the file contents with the contents in `netplan.yaml`.
 After making changes to the yaml file, run `sudo netplan apply` to apply the changes.
 
 #### Capture Data
