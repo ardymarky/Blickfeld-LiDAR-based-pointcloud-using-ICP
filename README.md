@@ -106,11 +106,16 @@ ros2 bag play <path>*.bag
 
 ## Extra Steps
 
-To execute a python script on bootup, `run crontab -e` and add the code below.
+### Run on System Boot
+To execute a python script on bootup, run `sudo crontab -e` and add the code below. In the blickfeld case, the script should be `relay.py` in the user's home directory
 
 ```crontab
-@reboot /path/to/script
+@reboot /usr/bin/python3 /path/to/script
 ```
+
+### Visual LED indicator
+
+Running `relay.py`
 
 ## Future Steps
 
