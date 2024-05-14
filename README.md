@@ -34,8 +34,8 @@ git checkout ba53a9d
 
 Documentation: https://docs.blickfeld.com/cube/latest/getting_started.
 
-To connect to the blickfeld over a newtork switch, the ethernet adapter must be configured to a static ip address. In the pi terminal, run `ip addr` and identify the name of the ethernet cable (should be eth0). 
-edit the appropriate `.yaml` file in `/etc/netplan/` and change it accordingly:
+To connect to the blickfeld over a network switch, the ethernet adapter must be configured to a static ip address. In the Raspberry Pi terminal, run `ip addr` and identify the name of the ethernet cable (should be eth0). 
+Edit the appropriate `.yaml` file in `/etc/netplan/` and change it accordingly:
 
 ```yaml
 network:
@@ -108,18 +108,21 @@ ros2 bag play <path>*.bag
 ## Extra Steps
 
 ### Run on System Boot
+
 To execute a python script on bootup, run `sudo crontab -e` and add the code below. In the blickfeld case, the script should be `relay.py` in the user's home directory
 
 ```crontab
 @reboot /usr/bin/python3 /path/to/script
 ```
 
-### Visual LED indicator
+### Relay Switch
 
-Running `relay.py`
+Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. The ACT Led is also configured to indicate whether or not the blickfeld in online. If the ACT light blinks every 5ish seconds, it is still connecting to the blickfeld. When the ACT light is solid green, the system is up and running.
 
-## Future Steps
+### SSH through LAN
 
-1.  Configure pi to run script on boot
-2.  Set up relay switch connection
-3.  SSH through LAN on the pi
+Documentation: https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide \
+FileZilla: https://filezilla-project.org/
+
+To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
+Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
