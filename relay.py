@@ -6,7 +6,7 @@ import subprocess
 GPIO.setmode(GPIO.BCM)
 
 # Set up GPIO pin as an input
-relay_pin = 17  # Change this to match your wiring
+relay_pin = 16  # Change this to match your wiring
 GPIO.setup(relay_pin, GPIO.IN)
 
 # Variable to track the state of the relay
