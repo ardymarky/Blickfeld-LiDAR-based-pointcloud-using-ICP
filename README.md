@@ -5,8 +5,8 @@ This github is to document the process of setting up a Blickfeld Outdoor Cube 1 
 ### Main steps:
 1.  Configure a Raspberry Pi 4 to run Ros2 Foxy
 2.  Setup the Blickfeld Driver and record bag data
-3.  Install KissICP on post-processing computer
-4.  Run Rviz2 and view bag data
+3.  Process PointCloud in Matlab
+4.  Visualize and Edit PointCloud in CloudCompare
 
 Blickfeld Cube 1 Manual: https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf
 
@@ -70,40 +70,22 @@ source ${colcon dir}/install/setup.bash
 ros2 bag record /bf_lidar/point_cloud_out
 ```
 
-## Step 3: Install KissICP
+## Step 3: Matlab ICP
 
-To post-process the bag file taken from the Blickfeld, the Kiss-ICP Lidar Odometry Pipeline is used because of its Ros2 support
+To post-process the bag file taken from the Blickfeld, the Matlab ICP Map Builder is used.
 
-Kiss-ICP: https://github.com/PRBonn/kiss-icp/tree/main \
-Ros2 Wrapper: https://github.com/PRBonn/kiss-icp/blob/main/ros/README.md \
-WSL (for Windows): https://learn.microsoft.com/en-us/windows/wsl/install
+Matlab Guide: https://www.mathworks.com/help/driving/ug/build-a-map-from-lidar-data.html \
+Matlab Install: https://www.mathworks.com/help/install/install-products.html
 
-Kiss-ICP does not require the Ros2 Foxy Distribution so Ros2 Humble can be used on Ubuntu 22.04. Use WSL (Windows Subsystem for Linux) to get Ros2 humble setup on a Windows machine. Once Ros2 Humble is installed, build Kiss-ICP using:
+Open Matlab and run `pointcloudparser.m`, modifying the file as required. This will parse the Ros2 PointCloud into a format Matlab can understand. Once the script finishes running, run `icpsolver.m`. This will output a combined PointCloud as a `.ply` file.
 
-```console
-git clone https://github.com/PRBonn/kiss-icp
-colcon build
-source ./install/setup.bash
-```
+Should Matlab throw the error `'helperLidarMapBuilder' is used in the following examples...`, download `helperLidarMapBuilder.m` and add it to the current directory.
 
-## Step 4: Rviz2 Visualizer
+## Step 4: CloudCompare
 
-Walkthrough for many Ros2 bag commands: https://docs.ros.org/en/humble/Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.html
+Download: https://www.danielgm.net/cc/
 
-It is recommended to first launch the node without defining the bagfile. This should open Rviz2 and listen for a bagfile which can be played on a different shell. Should Rviz2 fail to open, it may be neccessary to prepend `
-LIBGL_ALWAYS_SOFTWARE=1` to the start of the console command.
-
-```console
-source ./${Kiss Dir}/install/setup.bash
-ros2 launch kiss_icp odometry.launch.py topic:=/bf_lidar/point_cloud_out
-```
-
-If the topic name is unknown, simply run `ros2 bag list <path>*.bag`, where <path>* is the path to the bag file.
-Once the listener and Rviz2 are running, open a different shell and run
-
-```console
-ros2 bag play <path>*.bag
-```
+Any pointcloud software should be suitable in viewing and editing the outputted `.ply` file. CloudCompare was chosen because it is free.
 
 ## Extra Steps
 
@@ -117,7 +99,7 @@ To execute a python script on bootup, run `sudo crontab -e` and add the code bel
 
 ### Relay Switch
 
-Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. The ACT Led is also configured to indicate whether or not the blickfeld in online. If the ACT light blinks every 5ish seconds, it is still connecting to the blickfeld. When the ACT light is solid green, the system is up and running.
+Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. The ACT Led is also configured to indicate whether or not the blickfeld is online. If the ACT light blinks every 5ish seconds, it is still connecting to the blickfeld. When the ACT light is solid green, the system is up and running. When the ACT light rapidly flickers, relay is on and data is being saved to a ros2 bagfile.
 
 ### SSH through LAN
 
