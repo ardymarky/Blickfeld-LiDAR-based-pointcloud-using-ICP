@@ -131,6 +131,7 @@ hdmi_force_hotplug=1
 5.  From transmitter, turn relay on (switch E) and wait at LEAST 40 seconds.
 6.  Verify laser is on via flashing lights, filezilla connection, or visually seeing the laser pulses. \
       a.  FileZilla connection: 192.168.26.200, amarkin, password, 22
-8.  All flight plans should have a speed of 1.5 m/s and a height of 20-30 m.
-9.  At 25m, a path spacing of 10m gives a 3.3 meter overlap in pointcloud imaging.
+8.  All flight plans should have a speed of 1.5 m/s and a height of 40 m.
+9.  At 40 m, a path spacing of 15 m gives a 6.4 meter overlap in pointcloud imaging.
+10.  Resolution of 200x200 scanlines is suitable and can always be modified in postprocessing
 
