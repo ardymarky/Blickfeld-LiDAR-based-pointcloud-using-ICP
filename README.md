@@ -108,3 +108,16 @@ FileZilla: https://filezilla-project.org/
 
 To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
 Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
+
+### HDMI on Boot
+
+If no HDMI is plugged into the Raspberry Pi 4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
+
+```console
+# Force HDMI even if no monitor is detected
+hdmi_force_hotplug=1
+
+# Uncomment if you have trouble with the Pi detecting your display or outputting
+# hdmi_safe=1
+# hdmi_ignore_edid=0xa5000080
+```
