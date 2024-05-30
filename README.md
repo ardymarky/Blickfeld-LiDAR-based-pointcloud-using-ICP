@@ -121,3 +121,16 @@ hdmi_force_hotplug=1
 # hdmi_safe=1
 # hdmi_ignore_edid=0xa5000080
 ```
+
+### LAGER specific Deployment Procedure
+
+1.  Attach Lidar to S900 via mount. M4 and M2 drivers are needed to secure payload.
+2.  Plug relay pin into Aux Out Pin 6 on the Cube
+3.  Connect three way to the drone's power cable and power on
+4.  Wait at LEAST 100 seconds for system to completely boot
+5.  From transmitter, turn relay on (switch E) and wait at LEAST 40 seconds.
+6.  Verify laser is on via flashing lights, filezilla connection, or visually seeing the laser pulses. \
+      a.  FileZilla connection: 192.168.26.200, amarkin, password, 22
+8.  All flight plans should have a speed of 1.5 m/s and a height of 20-30 m.
+9.  At 25m, a path spacing of 10m gives a 3.3 meter overlap in pointcloud imaging.
+
