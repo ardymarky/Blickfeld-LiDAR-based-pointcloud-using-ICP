@@ -8,22 +8,22 @@ This github is to document the process of setting up a Blickfeld Outdoor Cube 1 
 3.  Process PointCloud in Matlab
 4.  Visualize and Edit PointCloud in CloudCompare
 
-Blickfeld Cube 1 Manual: https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf
+[Blickfeld Cube 1 Manual](https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf)
 
 ## Step 1: Ros2 Foxy on Raspberry Pi 4
 
-Ros2 Foxy Documentation: https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html.
+[Ros2 Foxy Docs](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
 
 The Cube 1's provided driver requires a Ros2 Foxy Distribution. Preliminary steps to installing Ros2 include flashing an Ubuntu 20.04 image on the pi and installing any required dependencies. Should the system architecture not match, building from source will be neccessary.
 
 ## Step 2: Blickfeld Driver and Capturing Data
 
-Driver: https://www.blickfeld.com/resources/ \
-Installation Process: https://docs.blickfeld.com/cube/latest/external/ros/driver-v2/README.html
+[Blickfeld Driver](https://www.blickfeld.com/resources/) \
+[Installation Process](https://docs.blickfeld.com/cube/latest/external/ros/driver-v2/README.html)
 
 Once Ros2 Foxy has been installed on the pi, the next step is the blickfeld driver. Before building using "colcon", make sure to extract the driver and move it to the /${workspace}/src directory.
 
-IMPORTANT: double check the Cube1 for its BSL version dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found at https://github.com/Blickfeld/blickfeld-scanner-lib/releases. Replace ba53a9d with the desired branch/release.
+IMPORTANT: double check the Cube1 for its BSL version dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found [here](https://github.com/Blickfeld/blickfeld-scanner-lib/releases). Replace ba53a9d with the desired branch/release.
 
 ```console
 cd /${BSL_directory}
@@ -32,7 +32,7 @@ git checkout ba53a9d
 
 #### Static IP Address
 
-Documentation: https://docs.blickfeld.com/cube/latest/getting_started.
+[Documentation](https://docs.blickfeld.com/cube/latest/getting_started)
 
 To connect to the blickfeld over a network switch, the ethernet adapter must be configured to a static ip address. In the Raspberry Pi terminal, run `ip addr` and identify the name of the ethernet cable (should be eth0). 
 Edit the appropriate `.yaml` file in `/etc/netplan/` and change it accordingly:
@@ -74,8 +74,8 @@ ros2 bag record /bf_lidar/point_cloud_out
 
 To post-process the bag file taken from the Blickfeld, the Matlab ICP Map Builder is used.
 
-Matlab Guide: https://www.mathworks.com/help/driving/ug/build-a-map-from-lidar-data.html \
-Matlab Install: https://www.mathworks.com/help/install/install-products.html
+[Matlab Guide](https://www.mathworks.com/help/driving/ug/build-a-map-from-lidar-data.html) \
+[Matlab Install](https://www.mathworks.com/help/install/install-products.html)
 
 Open Matlab and run `pointcloudparser.m`, modifying the file as required. This will parse the Ros2 PointCloud into a format Matlab can understand. Once the script finishes running, run `icpsolver.m`. This will output a combined PointCloud as a `.ply` file.
 
@@ -83,7 +83,7 @@ Should Matlab throw the error `'helperLidarMapBuilder' is used in the following 
 
 ## Step 4: CloudCompare
 
-Download: https://www.danielgm.net/cc/
+[CloudCompare](https://www.danielgm.net/cc/)
 
 Any pointcloud software should be suitable in viewing and editing the outputted `.ply` file. CloudCompare was chosen because it is free.
 
@@ -103,8 +103,8 @@ Running `relay.py` on boot gives the LiDAR system a relay switch that either sta
 
 ### SSH through LAN
 
-Documentation: https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide \
-FileZilla: https://filezilla-project.org/
+[SSH/LAN Docs](https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide) \
+[FileZilla](https://filezilla-project.org/)
 
 To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
 Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
