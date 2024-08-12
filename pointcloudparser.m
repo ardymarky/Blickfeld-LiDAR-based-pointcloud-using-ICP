@@ -1,26 +1,28 @@
 clc; clear; close all;
 
-% lidarFile = "scan7/rosbag2_2024_04_24-17_27_18_0.db3";
-lidarFile = "please2/rosbag2_2024_05_13-23_52_13_0.db3";
+% lidarFile = "TestFlight2/rosbag.db3";
+lidarFile = "Third_flight/rosbag2_2024_07_12-21_32_38_0.db3";
 data = ros2bagreader(lidarFile)
 
 pointcloudBag = select(data,"Topic","/bf_lidar/point_cloud_out");
-imuBag = select(data,"Topic","/bf_lidar/imu_out");
+% imuBag = select(data,"Topic","/bf_lidar/imu_out");
 pointCloudMessages = readMessages(pointcloudBag);
-imuMessages = readMessages(imuBag);
+% imuMessages = readMessages(imuBag);
 
 baginfo = ros2('bag', 'info', lidarFile);
-frames = pointcloudBag.NumMessages;
+frames = pointcloudBag.NumMessages
 
 % Determine limits for the player
-xlimits = [-10 15]; % meters
-ylimits = [0 20];
-zlimits = [-2 5];
+xlimits = [-60 60]; % meters
+ylimits = [-50 50];
+zlimits = [-50 0];
 
+start_frame = 1;
+skip_frame = 1;
 % Create a pcplayer to visualize streaming point clouds from lidar sensor
 lidarPlayer = pcplayer(xlimits, ylimits, zlimits);
-processedPC = cell(1,frames);
-for j = 1:frames
+processedPC = cell(1, frames);
+for j = start_frame:skip_frame:184
     disp(j)
     % Get the fields from the PointCloud2 message
     % fields = messages.Fields;
@@ -38,17 +40,23 @@ for j = 1:frames
         x = typecast(data(base:base+3), 'single');
         y = typecast(data(base+4:base+7), 'single');
         z = typecast(data(base+8:base+11), 'single');
-        xyz(i, :) = [x, y, z];
+        xyz(i, :) = [x, z, -y];
+        
     end
     
     % Create a point cloud object in MATLAB
     ptCloud = pointCloud(xyz);
-    processedPC{j} = ptCloud;
+
+    [pc_filtered, outlier_indices] = pcdenoise(ptCloud);
+    processedPC{(j-start_frame)/skip_frame +1} = pc_filtered;
     
-    view(lidarPlayer, ptCloud);
+    view(lidarPlayer, pc_filtered);
     pause(0.01)
 end
 
-save('processedPC.mat', "processedPC")
+
+% outputFileName = 'outputPointCloud4.ply';
+% pcwrite(processedPC{1}, outputFileName, 'PLYFormat', 'ascii');
+save('processedPC3.mat', "processedPC")
 
     
