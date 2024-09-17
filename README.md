@@ -21,6 +21,8 @@ The Cube 1's provided driver requires a Ros2 Foxy Distribution. Preliminary step
 [Blickfeld Driver](https://www.blickfeld.com/resources/) \
 [Installation Process](https://docs.blickfeld.com/cube/latest/external/ros/driver-v2/README.html)
 
+When installing BSL, build it from source with installed dependencies. Install protoc buffers and cmake via available packages.
+
 Once Ros2 Foxy has been installed on the pi, the next step is the blickfeld driver. Before building using "colcon", make sure to extract the driver and move it to the /${workspace}/src directory.
 
 IMPORTANT: double check the Cube1 for its BSL version dependency. If neccessary, you may have to checkout an older branch before compiling BSL. BSL version history can be found [here](https://github.com/Blickfeld/blickfeld-scanner-lib/releases). Replace ba53a9d with the desired branch/release.
