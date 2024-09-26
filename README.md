@@ -111,6 +111,8 @@ Running `relay.py` on boot gives the LiDAR system a relay switch that either sta
 To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
 Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
 
+Also you may need to uncomment: `PasswordAuthentication yes` in `/etc/ssh/sshd_config` to login.
+
 ### HDMI on Boot
 
 If no HDMI is plugged into the Raspberry Pi 4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
