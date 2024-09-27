@@ -126,6 +126,12 @@ hdmi_force_hotplug=1
 # hdmi_ignore_edid=0xa5000080
 ```
 
+### GPS over UART
+
+[U-Boot](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
+
+To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot.
+
 ### LAGER specific Deployment Procedure
 
 1.  Attach Lidar to S900 via mount. M4 and M2 drivers are needed to secure payload.
