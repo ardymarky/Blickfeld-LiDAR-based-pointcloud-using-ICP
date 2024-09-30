@@ -12,9 +12,9 @@ GPIO.setup(relay_pin, GPIO.IN)
 # Variable to track the state of the relay
 relay_state = GPIO.input(relay_pin)
 
-ros2_command = "ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26 -p publish_imu:=true -p publish_imu_static_tf_at_start:=true"
+record_command = "ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26"
 
-save_command = "ros2 bag record /bf_lidar/point_cloud_out /bf_lidar/imu_out"
+save_command = '''ros2 bag record /bf_lidar/point_cloud_out -o "$(date '+%H:%M %F') Scan"'''
 
 # Function to execute additional actions (e.g., start/stop recording)
 def execute_additional_actions():
@@ -23,7 +23,7 @@ def execute_additional_actions():
     if GPIO.input(relay_pin) == GPIO.HIGH:
         print("recording")
         # Start recording (execute your Python script)
-        subprocess.Popen(ros2_command, shell=True, executable='/bin/bash')
+        subprocess.Popen(record_command, shell=True, executable='/bin/bash')
         time.sleep(10)
         
         print("saving")
@@ -37,7 +37,7 @@ def execute_additional_actions():
         
         time.sleep(2)
         
-        subprocess.Popen(["pkill", "-f", ros2_command])
+        subprocess.Popen(["pkill", "-f", record_command])
 
 def ping_ip(ip_address):
     result = subprocess.run(['ping', '-c', '1', ip_address], stdout=subprocess.PIPE)
