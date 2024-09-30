@@ -111,6 +111,8 @@ Running `relay.py` on boot gives the LiDAR system a relay switch that either sta
 To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
 Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
 
+Also you may need to uncomment: `PasswordAuthentication yes` in `/etc/ssh/sshd_config` to login.
+
 ### HDMI on Boot
 
 If no HDMI is plugged into the Raspberry Pi 4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
@@ -123,6 +125,12 @@ hdmi_force_hotplug=1
 # hdmi_safe=1
 # hdmi_ignore_edid=0xa5000080
 ```
+
+### GPS over UART
+
+[U-Boot](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
+
+To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot.
 
 ### LAGER specific Deployment Procedure
 
