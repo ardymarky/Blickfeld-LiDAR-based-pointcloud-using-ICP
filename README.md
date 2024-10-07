@@ -69,11 +69,11 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 
 To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot. Follow the steps [avaiable here.](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
 
-Breakout the UART's TX and ground cables, and connect them to GPIO pins 6 and 10 respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
+Breakout the UART's TX and ground cables, and connect them to pins 6 and 10 (GPIO 15) respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
 
 ### LED indicators
 
-To assist the operator in tracking the status of the system without the need to remote-in or an external monitor, led indicator lights were used. Connect the red led to pin 22 (GPIO 25) and the green led to pin 18 (GPIO 24). Connect their ground to pin 20.
+To assist the operator in tracking the status of the system without the need to remote-in or an external monitor, LED indicator lights were used. Connect the red LED to pin 22 (GPIO 25) and the green LED to pin 18 (GPIO 24). Connect their ground to pin 20. The RPI4 outputs a voltage of 3.3V to each LED.
 
 | Color    | Behavior | Status |
 | -------- | ------- | ------- |
