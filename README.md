@@ -69,11 +69,45 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 
 To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot. Follow the steps [avaiable here.](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
 
-Breakout the UART's TX and ground cables, and connect them to GPIO pins 6 and 10 respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. 
-    * LED indicators
-    * HDMI on boot
-    * Execute on system boot
-    * Enable SSH
+Breakout the UART's TX and ground cables, and connect them to GPIO pins 6 and 10 respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
+
+### LED indicators
+
+To assist the operator in tracking the status of the system without the need to remote-in or an external monitor, led indicator lights were used. Connect the red led to pin 22 (GPIO 25) and the green led to pin 18 (GPIO 24). Connect their ground to pin 20.
+
+| Color    | Behavior | Status |
+| -------- | ------- | ------- |
+| Red  | Slow blinking    | Searching for LiDAR |
+| Red  | Rapid blinking    | Searching for GPS |
+| Red  | Solid  | System is ready/standby |
+| Green  | Solid   | Recording/Saving |
+
+### HDMI on boot
+
+If no HDMI is plugged into the Raspberry Pi 4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
+
+```console
+# Force HDMI even if no monitor is detected
+hdmi_force_hotplug=1
+
+# Uncomment if you have trouble with the Pi detecting your display or outputting
+# hdmi_safe=1
+# hdmi_ignore_edid=0xa5000080
+```
+### Execute on system boot
+
+Because the python script uses a subprocess/new terminal to execute ROS commands, crontab can't properly execute the commands. Instead, simply add the command `/usr/bin/python3 /path/to/relay_boot.py/file in <strong>Startup Applications</strong>.
+
+### SSH through LAN
+
+[SSH/LAN Docs](https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide) \
+[FileZilla](https://filezilla-project.org/)
+
+To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
+Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
+
+Also you may need to uncomment: `PasswordAuthentication yes` in `/etc/ssh/sshd_config` to login.
+
 ## Step 4: Capture Data
 
 After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. This will begin to send Ros PointCloud2 messages. To also record an intensity image, append `-p publish_intensities:=true -p publish_intensity_image:=true` To also record imu data, append `-p publish_imu:=true -p publish_imu_static_tf_at_start:=true`
@@ -90,7 +124,7 @@ source ${colcon dir}/install/setup.bash
 ros2 bag record /bf_lidar/point_cloud_out
 ```
 
-## Step 3: Matlab ICP
+## Step 5: Matlab ICP
 
 To post-process the bag file taken from the Blickfeld, the Matlab ICP Map Builder is used.
 
@@ -101,42 +135,11 @@ Open Matlab and run `pointcloudparser.m`, modifying the file as required. This w
 
 Should Matlab throw the error `'helperLidarMapBuilder' is used in the following examples...`, download `helperLidarMapBuilder.m` and add it to the current directory.
 
-## Extra Steps
-
-### Run on System Boot
-
-To execute a python script on bootup, run `sudo crontab -e` and add the code below. In the blickfeld case, the script should be `relay.py` in the user's home directory
-
-```crontab
-@reboot /usr/bin/python3 /path/to/script
-```
+## Extra Steps / Miscellaneous Details
 
 ### Relay Switch
 
-Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. The ACT Led is also configured to indicate whether or not the blickfeld is online. If the ACT light blinks every 5ish seconds, it is still connecting to the blickfeld. When the ACT light is solid green, the system is up and running. When the ACT light rapidly flickers, relay is on and data is being saved to a ros2 bagfile.
-
-### SSH through LAN
-
-[SSH/LAN Docs](https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide) \
-[FileZilla](https://filezilla-project.org/)
-
-To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
-Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
-
-Also you may need to uncomment: `PasswordAuthentication yes` in `/etc/ssh/sshd_config` to login.
-
-### HDMI on Boot
-
-If no HDMI is plugged into the Raspberry Pi 4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
-
-```console
-# Force HDMI even if no monitor is detected
-hdmi_force_hotplug=1
-
-# Uncomment if you have trouble with the Pi detecting your display or outputting
-# hdmi_safe=1
-# hdmi_ignore_edid=0xa5000080
-```
+Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. When the relay is on, data is being saved to a ros2 bagfile.
 
 ### LAGER specific Deployment Procedure
 
