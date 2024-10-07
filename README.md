@@ -1,12 +1,19 @@
 # Blickfeld pointcloud data collection and processing
 
-This github is to document the process of setting up a Blickfeld Outdoor Cube 1 LiDAR system to record and visualize pointcloud data through ROS2.
+This github is to document the process of setting up a Blickfeld Outdoor Cube 1 LiDAR system to record and visualize pointcloud data through ROS2. This in an ongoing process by LAGER and Nucor, and led by Arden Markin.
 
-### Main steps:
+## Configuration steps:
 1.  Configure a Raspberry Pi 4 to run Ros2 Foxy
-2.  Setup the Blickfeld Driver and record bag data
-3.  Process PointCloud in Matlab
-4.  Visualize and Edit PointCloud in CloudCompare
+2.  Install BSL and Blickfeld Driver
+3.  System Setup
+    * Static IP address
+    * GPS
+    * LED indicators
+    * HDMI on boot
+    * Execute on system boot
+    * Enable SSH
+4.  Capture LiDAR data
+5.  Post-process PointCloud in Matlab
 
 [Blickfeld Cube 1 Manual](https://www.blickfeld.com/wp-content/uploads/2022/10/Blickfeld-A5-Manual_en_v.4.2.pdf)
 
@@ -16,7 +23,7 @@ This github is to document the process of setting up a Blickfeld Outdoor Cube 1 
 
 The Cube 1's provided driver requires a Ros2 Foxy Distribution. Preliminary steps to installing Ros2 include flashing an Ubuntu 20.04 image on the pi and installing any required dependencies. Should the system architecture not match, building from source will be neccessary.
 
-## Step 2: Blickfeld Driver and Capturing Data
+## Step 2: BSL and Blickfeld Driver Setup
 
 [Blickfeld Driver](https://www.blickfeld.com/resources/) \
 [Installation Process](https://docs.blickfeld.com/cube/latest/external/ros/driver-v2/README.html)
@@ -32,7 +39,9 @@ cd /${BSL_directory}
 git checkout ba53a9d
 ```
 
-#### Static IP Address
+## Step 3: System Setup
+
+### Static IP Address
 
 [Documentation](https://docs.blickfeld.com/cube/latest/getting_started)
 
@@ -56,7 +65,16 @@ network:
 Replace `xxx` with any port number that is not 0, 255, or 26. Replace `eth0` with the name of the ethernet cable if different. Alternatively, replace the file contents with the contents in `netplan.yaml`.
 After making changes to the yaml file, run `sudo netplan apply` to apply the changes.
 
-#### Capture Data
+### GPS over UART
+
+To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot. Follow the steps [avaiable here.](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
+
+Breakout the UART's TX and ground cables, and connect them to GPIO pins 6 and 10 respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. 
+    * LED indicators
+    * HDMI on boot
+    * Execute on system boot
+    * Enable SSH
+## Step 4: Capture Data
 
 After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. This will begin to send Ros PointCloud2 messages. To also record an intensity image, append `-p publish_intensities:=true -p publish_intensity_image:=true` To also record imu data, append `-p publish_imu:=true -p publish_imu_static_tf_at_start:=true`
 
@@ -82,12 +100,6 @@ To post-process the bag file taken from the Blickfeld, the Matlab ICP Map Builde
 Open Matlab and run `pointcloudparser.m`, modifying the file as required. This will parse the Ros2 PointCloud into a format Matlab can understand. Once the script finishes running, run `icpsolver.m`. This will output a combined PointCloud as a `.ply` file.
 
 Should Matlab throw the error `'helperLidarMapBuilder' is used in the following examples...`, download `helperLidarMapBuilder.m` and add it to the current directory.
-
-## Step 4: CloudCompare
-
-[CloudCompare](https://www.danielgm.net/cc/)
-
-Any pointcloud software should be suitable in viewing and editing the outputted `.ply` file. CloudCompare was chosen because it is free.
 
 ## Extra Steps
 
@@ -125,12 +137,6 @@ hdmi_force_hotplug=1
 # hdmi_safe=1
 # hdmi_ignore_edid=0xa5000080
 ```
-
-### GPS over UART
-
-[U-Boot](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
-
-To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot.
 
 ### LAGER specific Deployment Procedure
 
