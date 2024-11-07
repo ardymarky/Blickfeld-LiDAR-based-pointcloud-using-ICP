@@ -39,7 +39,7 @@ time_init = False
 relay_state = GPIO.input(relay_pin)
 
 # ROS commands
-record_command = "ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26"
+record_command = "ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26 -p use_lidar_timestamp:=false"
 save_command = '''ros2 bag record /bf_lidar/point_cloud_out -o "$(date '+%H:%M %F') Scan"'''
 
 
@@ -126,10 +126,10 @@ while not time_init:
         print("gps connected!")
         
         # Convert GPS time to UNIX time
-        cur_posix_time = calc_posix_time(parsed_data.iTOW, parsed_data.week, parsed_data.leapS)-18000
+        cur_posix_time = calc_posix_time(parsed_data.iTOW, parsed_data.week, parsed_data.leapS)
         
         # Set System Time
-        formatted_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(cur_posix_time))
+        formatted_time = datetime.datetime.utcfromtimestamp(cur_posix_time).strftime('%Y-%m-%d %H:%M:%S')
         command = ['sudo', 'date', '--set', formatted_time]
         subprocess.run(command, check=True)
         time_init = True
