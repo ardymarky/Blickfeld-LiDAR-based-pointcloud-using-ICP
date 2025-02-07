@@ -1,4 +1,4 @@
-import RPi.GPIO as GPIO
+from gpiozero import LED, Button
 import time
 import subprocess
 import datetime
@@ -9,25 +9,17 @@ from pyubx2 import UBXReader
 
 ### VARIABLES ###
 
-# Set up GPIO using BCM numbering
-GPIO.setmode(GPIO.BCM)
+# Set up GPIO pins
+relay_pin = Button(16, pull_up=True)  # Relay switch
+led_standby_pin = LED(25)  # Standby LED
+led_recording_pin = LED(24)  # Recording LED
 
-# Set up GPIO pin as an input
-relay_pin = 16
-led_standby_pin = 25 #should be at 25
-led_recording_pin = 24 #should be at 24
-
-# Initialize status LEDs
-GPIO.setup(relay_pin, GPIO.IN)
-GPIO.setwarnings(False)
-GPIO.setup(led_standby_pin, GPIO.OUT)
-GPIO.setup(led_recording_pin, GPIO.OUT)
 stop_blinking = False
 blink_rate = 0.5
 
-# Turn off LEDs
-GPIO.output(led_recording_pin, GPIO.LOW)
-GPIO.output(led_standby_pin, GPIO.LOW)
+# Turn off LEDs initially
+led_standby_pin.off()
+led_recording_pin.off()
 
 
 # Default GPS port and baud
@@ -36,10 +28,10 @@ ins_baud = 38400
 time_init = False
 
 # Variable to track the state of the relay
-relay_state = GPIO.input(relay_pin)
+relay_state = relay_pin.is_pressed
 
 # ROS commands
-record_command = "./home/LAGER/nile/logger/lidar_logger/build/CloudCap"
+record_command = "/home/LAGER/nile/logger/lidar_logger/build/CloudCap"
 
 
 ### FUNCTIONS ###
@@ -47,27 +39,23 @@ record_command = "./home/LAGER/nile/logger/lidar_logger/build/CloudCap"
 # Blinking LED for status
 def blink_led():
     while not stop_blinking:
-        GPIO.output(led_standby_pin, not GPIO.input(led_standby_pin))
+        led_standby_pin.toggle()
         time.sleep(blink_rate)
 
 # When relay switch is flipped
 def relay_status_change():
-
     # Check if relay is turned on
-    if GPIO.input(relay_pin) == GPIO.HIGH:
+    if relay_pin.is_pressed:
         print("recording")
         # Start recording (execute your Python script)
         subprocess.Popen(record_command, shell=True, executable='/bin/bash')        
 
-        GPIO.output(led_standby_pin, GPIO.LOW)
-        GPIO.output(led_recording_pin, GPIO.HIGH)
-        
+        led_standby_pin.off()
+        led_recording_pin.on()
     else:
-    
-        # Stop recording (terminate the Python script if it's running)
         print("stopped recording")
-        GPIO.output(led_recording_pin, GPIO.LOW)
-        GPIO.output(led_standby_pin, GPIO.HIGH)
+        led_recording_pin.off()
+        led_standby_pin.on()
         
         subprocess.Popen(["pkill", "-f", record_command])
         
@@ -132,21 +120,17 @@ while not time_init:
 # System is on standby   
 print("connected to ip address")
 stop_blinking = True
-GPIO.output(led_standby_pin, GPIO.HIGH)
+led_standby_pin.on()
 
 ## MAIN LOOP ##
 try:
     while True:    
-    
-        # Check the state of the GPIO pin
-        if GPIO.input(relay_pin) != relay_state:
-        
-            # Relay state has changed
-            relay_state = GPIO.input(relay_pin)
+        if relay_pin.is_pressed != relay_state:
+            relay_state = relay_pin.is_pressed
             relay_status_change()
         
         time.sleep(0.01)
         
 except KeyboardInterrupt:
-    # Clean up GPIO on keyboard interrupt
-    GPIO.cleanup()
+    led_standby_pin.off()
+    led_recording_pin.off()
