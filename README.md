@@ -6,10 +6,13 @@ This repository documents the process of setting up a Blickfeld Outdoor Cube 1 L
 
 ## Select Platform
 
-* To setup ROS2 on Ubuntu 20.04, click [here](#ubuntu-20.04)
+* To setup ROS2 on Ubuntu 20.04, click [here](#ubuntu)
 * To setup barebones C++ on RPI4 IOS, click [here](#raspberry-pi)
+ - [Specification](#specification) 
+ - [Dependencies Title](#dependencies-title) 
 
-## Ubuntu 20.04
+## Specification
+# Ubuntu
 
 ### Configuration steps
 1.  Install Ubuntu 20.04 on RPI4
@@ -170,7 +173,7 @@ Should Matlab throw the error `'helperLidarMapBuilder' is used in the following 
 ### Relay Switch
 
 Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. When the relay is on, data is being saved to a ros2 bagfile.
-
+# Raspberry Pi
 ### LAGER specific Deployment Procedure
 
 1.  Attach Lidar to S900 via mount. M4 and M2 drivers are needed to secure payload.
