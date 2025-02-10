@@ -6,13 +6,180 @@ This repository documents the process of setting up a Blickfeld Outdoor Cube 1 L
 
 ## Select Platform
 
-* To setup ROS2 on Ubuntu 20.04, click [here](#ubuntu)
-* To setup barebones C++ on RPI4 IOS, click [here](#raspberry-pi)
- - [Specification](#specification) 
- - [Dependencies Title](#dependencies-title) 
+<details>
+<summary>C++ & RPI4 IOS</summary>
 
-## Specification
-# Ubuntu
+## C++ & RPI4 IOS
+
+### Configuration steps
+1.  Install RPI4 IOS
+2.  Install BSL
+4.  System Setup
+    * Static IP address
+    * GPS
+    * LED indicators
+    * HDMI on boot
+    * Execute on system boot
+    * Enable SSH
+5.  Capture LiDAR data
+6.  Post-process PointCloud in Matlab
+
+## Step 1: Install RPI4 IOS
+
+Download and open the Raspberry Pi Imager [here](https://www.raspberrypi.com/software/)
+
+Select the RPI4 device and Rasbian operating system. Insert and select the SD card to flash the image to. Once complete, insert the SD card into the RPI4.
+
+## Step 2: Blickfeld Standard Library
+
+[Blickfeld Driver](https://www.blickfeld.com/resources/) \
+[Installation Process](https://docs.blickfeld.com/cube/latest/external/blickfeld-scanner-lib/install.html)
+
+To install BSL, build it from source WITH installed dependencies. Install protoc buffers and cmake via available packages. The following lines should be all you need.
+
+```console
+sudo apt update
+sudo apt install -y cmake git build-essential libprotobuf-dev libprotoc-dev protobuf-compiler
+sudo apt update
+git clone --recursive https://github.com/Blickfeld/blickfeld-scanner-lib.git
+mkdir blickfeld-scanner-lib/build && cd blickfeld-scanner-lib/build
+cmake ..
+make -j3
+sudo make install
+```
+
+## Step 4: System Setup
+
+### Static IP Address
+
+To connect to the blickfeld over a network switch, the ethernet adapter must be configured to a static ip address. In the terminal, run `ip addr` and identify the name of the ethernet cable (should be eth0). 
+
+Create a new network file: `sudo nano /etc/systemd/network/eth0.network` and add these contents
+
+```network
+[Match]
+Name=eth0
+
+[Network]
+Address=192.168.26.xxx/24
+DNS=8.8.8.8 8.8.4.4
+DHCP=ipv4
+Optional=true
+```
+
+Replace `xxx` with any port number that is not 0, 255, or 26. Replace `eth0` with the name of the ethernet cable if different.
+To permanently apply these changes run 
+
+```console
+sudo systemctl restart systemd-networkd
+sudo systemctl enable systemd-networkd
+```
+
+### Pip Install
+
+Installing through pip has proven jank at times so instead of a requirements.txt, here are all the libraries you will need to properly run relay_rpi.py:
+
+```console
+pip3 install --break-system-packages pyubx2
+pip3 install RPi.GPIO
+pip3 install gpiozero --break-system-packages
+```
+
+### GPS over UART
+
+Breakout the UART's TX and ground cables, and connect them to pins 6 and 10 (GPIO 15) respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
+
+To ensure the system boots without interfernce over UART, run `sudo nano /boot/firmware/config.txt` and add/change lines:
+
+```console
+#dtoverlay=disable-bt
+enable_uart=0
+```
+
+Remove `console=serial-,115200` and `console=ttyS0,115200` from `/boot/firmware/cmdline.txt` if present.
+
+Finally, run disable serial console and reboot:
+```console
+sudo systemctl disable serial-getty@ttyS0.service
+sudo systemctl stop serial-getty@ttyS0.service
+sudo reboot
+```
+
+### LED indicators
+
+To assist the operator in tracking the status of the system without the need to remote-in or an external monitor, LED indicator lights were used. Connect the red LED to pin 22 (GPIO 25) and the green LED to pin 18 (GPIO 24). Connect their ground to pin 20. The RPI4 outputs a voltage of 3.3V to each LED.
+
+| Color    | Behavior | Status |
+| -------- | ------- | ------- |
+| Red  | Slow blinking    | Searching for LiDAR |
+| Red  | Rapid blinking    | Searching for GPS |
+| Red  | Solid  | System is ready/standby |
+| Green  | Solid   | Recording/Saving |
+
+### HDMI on boot
+
+If no HDMI is plugged into the RPI4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
+
+```console
+# Force HDMI even if no monitor is detected
+hdmi_force_hotplug=1
+
+# Uncomment if you have trouble with the Pi detecting your display or outputting
+# hdmi_safe=1
+# hdmi_ignore_edid=0xa5000080
+```
+### Execute on system boot
+
+Because the python script uses a subprocess/new terminal to execute ROS commands, crontab can't properly execute the commands. Instead, simply add the command `/usr/bin/python3 /path/to/relay_boot.py/file in <strong>Startup Applications</strong>.
+
+### SSH through LAN
+
+[SSH/LAN Docs](https://serverastra.com/docs/Tutorials/Setting-Up-and-Securing-SSH-on-Ubuntu-22.04%3A-A-Comprehensive-Guide) \
+[FileZilla](https://filezilla-project.org/)
+
+To setup SSH through the network switch over LAN, follow the steps in the link above. To transfer files, connect a laptop to the network switch and run FileZilla or any other file transfering application.
+Should it not connect through LAN, check the laptop's ethernet cable connection, manually setting the subnet to `192.168.26.X` and the mask to `255.255.255.0` if necessary.
+
+Also you may need to uncomment: `PasswordAuthentication yes` in `/etc/ssh/sshd_config` to login.
+
+## Step 4: Capture Data
+
+After configuring the driver and ethernet, run the Blickfeld Ros2 component using the command below. This will begin to send Ros PointCloud2 messages. To also record an intensity image, append `-p publish_intensities:=true -p publish_intensity_image:=true` To also record imu data, append `-p publish_imu:=true -p publish_imu_static_tf_at_start:=true`
+
+```console
+source ${colcon dir}/install/setup.bash
+ros2 component standalone blickfeld_driver blickfeld::ros_interop::BlickfeldDriverComponent -p host:=192.168.26.26 
+```
+
+In a seperate terminal, setup a ros2 listener to record the PointCloud2 data to a bagfile. After the scan has been completed, press Ctrl-C to stop recording and close the driver - bag folder should be saved to the current directory.
+
+```console
+source ${colcon dir}/install/setup.bash
+ros2 bag record /bf_lidar/point_cloud_out
+```
+
+## Step 5: Matlab ICP
+
+To post-process the bag file taken from the Blickfeld, the Matlab ICP Map Builder is used.
+
+[Matlab Guide](https://www.mathworks.com/help/driving/ug/build-a-map-from-lidar-data.html) \
+[Matlab Install](https://www.mathworks.com/help/install/install-products.html)
+
+Open Matlab and run `pointcloudparser.m`, modifying the file as required. This will parse the Ros2 PointCloud into a format Matlab can understand. Once the script finishes running, run `icpsolver.m`. This will output a combined PointCloud as a `.ply` file.
+
+Should Matlab throw the error `'helperLidarMapBuilder' is used in the following examples...`, download `helperLidarMapBuilder.m` and add it to the current directory.
+
+## Extra Steps / Miscellaneous Details
+
+### Relay Switch
+
+Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. When the relay is on, data is being saved to a ros2 bagfile.
+
+</details>
+<details>
+<summary>ROS2 & Ubuntu</summary>
+
+## Ubuntu
 
 ### Configuration steps
 1.  Install Ubuntu 20.04 on RPI4
@@ -20,6 +187,7 @@ This repository documents the process of setting up a Blickfeld Outdoor Cube 1 L
 3.  Install Ros2 Foxy
 4.  System Setup
     * Static IP address
+    * Pip install
     * GPS
     * LED indicators
     * HDMI on boot
@@ -98,11 +266,21 @@ network:
 Replace `xxx` with any port number that is not 0, 255, or 26. Replace `eth0` with the name of the ethernet cable if different. Alternatively, replace the file contents with the contents in `netplan.yaml`.
 After making changes to the yaml file, run `sudo netplan apply` to apply the changes.
 
+### Pip Install
+
+Installing through pip has proven jank at times so instead of a requirements.txt, here are all the libraries you will need to properly run relay_rpi.py:
+
+```console
+pip3 install --break-system-packages pyubx2
+pip3 install RPi.GPIO
+pip3 install gpiozero --break-system-packages
+```
+
 ### GPS over UART
 
 To get GPS working over UART, U-boot must be configured manually so that serial console isn't corrupted by the new serial uart on boot. Follow the steps [avaiable here.](https://raspberrypi.stackexchange.com/questions/116074/how-can-i-disable-the-serial-console-on-distributions-that-use-u-boot/117950#117950)
 
-Breakout the UART's TX and ground cables, and connect them to pins 6 and 10 (GPIO 15) respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
+Breakout the GPS UART's TX and ground cables, and connect them to pins 6 and 10 (GPIO 15) respectively. Ensure your GPS receiver is sending UBX-NAV-TIMEGPS messages. Should the RPI4 successfully connect to the receiver, the system time should be correctly set and the led indicator light will turn green. Each subsequent recorded BAG file with then be time stamped in the following format: `Hour:Minute Month/Day/Year Scan`
 
 ### LED indicators
 
@@ -173,7 +351,9 @@ Should Matlab throw the error `'helperLidarMapBuilder' is used in the following 
 ### Relay Switch
 
 Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. When the relay is on, data is being saved to a ros2 bagfile.
-# Raspberry Pi
+
+</details>
+
 ### LAGER specific Deployment Procedure
 
 1.  Attach Lidar to S900 via mount. M4 and M2 drivers are needed to secure payload.
