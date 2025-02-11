@@ -81,7 +81,6 @@ Installing through pip has proven jank at times so instead of a requirements.txt
 
 ```console
 pip3 install --break-system-packages pyubx2
-pip3 install RPi.GPIO
 pip3 install gpiozero --break-system-packages
 ```
 
@@ -271,9 +270,8 @@ After making changes to the yaml file, run `sudo netplan apply` to apply the cha
 Installing through pip has proven jank at times so instead of a requirements.txt, here are all the libraries you will need to properly run relay_rpi.py:
 
 ```console
-pip3 install --break-system-packages pyubx2
+pip3 install pyubx2
 pip3 install RPi.GPIO
-pip3 install gpiozero --break-system-packages
 ```
 
 #### GPS over UART
@@ -353,6 +351,34 @@ Should Matlab throw the error `'helperLidarMapBuilder' is used in the following 
 Running `relay.py` on boot gives the LiDAR system a relay switch that either starts or stops the recording process. When the relay is on, data is being saved to a ros2 bagfile.
 
 </details>
+
+## Video Streaming via DoodleLabs
+
+To see what we are scanning, a RPI camera is incorporated into the system. The live feed is fed through Gstreamer to a DoodleLabs module connnected to the network switch.
+
+First install gstreamer:
+```console
+sudo apt update
+sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly gstreamer1.0-libav \
+    gstreamer1.0-omx gstreamer1.0-rtsp gstreamer1.0-pulseaudio
+```
+
+Edit `/boot/firmware/config.txt` and reboot:
+
+```console
+gpu_mem=256
+dtoverlay=vc4-kms-v3d
+dtoverlay=imx477
+```
+
+To view camera footage, run `gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! autovideosink` (untested)
+
+To stream camera footage, run `gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false` (untested)
+
+Ensure doodlelabs is connected through the network switch. Once camera footage is streaing on the receiving host, run `gst-launch-1.0 udpsrc port=5001 caps="application/x-rtp,media=video,clock-rate=90000,encoding-name=H264" ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink sync=false` to view.
+
 
 ### LAGER specific Deployment Procedure
 
