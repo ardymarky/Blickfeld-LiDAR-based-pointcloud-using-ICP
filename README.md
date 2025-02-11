@@ -352,7 +352,7 @@ Running `relay.py` on boot gives the LiDAR system a relay switch that either sta
 
 </details>
 
-## Video Streaming via DoodleLabs
+# Video Streaming via DoodleLabs
 
 To see what we are scanning, a RPI camera is incorporated into the system. The live feed is fed through Gstreamer to a DoodleLabs module connnected to the network switch.
 
