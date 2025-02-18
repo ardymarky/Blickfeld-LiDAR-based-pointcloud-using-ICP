@@ -362,7 +362,8 @@ sudo apt update
 sudo apt install -y gstreamer1.0-tools gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-ugly gstreamer1.0-libav \
-    gstreamer1.0-omx gstreamer1.0-rtsp gstreamer1.0-pulseaudio
+    gstreamer1.0-omx gstreamer1.0-rtsp gstreamer1.0-pulseaudio \
+    gstreamer1.0-libcamerasrc
 ```
 
 Edit `/boot/firmware/config.txt` and reboot:
@@ -373,9 +374,9 @@ dtoverlay=vc4-kms-v3d
 dtoverlay=imx477
 ```
 
-To view camera footage, run `gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! autovideosink` (untested)
+To view camera footage, run `gst-launch-1.0 libcamerasrc ! videoconvert ! autovideosink`
 
-To stream camera footage, run `gst-launch-1.0 v4l2src device=/dev/video0 ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false` (untested)
+To stream camera footage, run `gst-launch-1.0 libcamerasrc ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false` (untested)
 
 Ensure doodlelabs is connected through the network switch. Once camera footage is streaing on the receiving host, run `gst-launch-1.0 udpsrc port=5001 caps="application/x-rtp,media=video,clock-rate=90000,encoding-name=H264" ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink sync=false` to view.
 
