@@ -52,28 +52,7 @@ sudo make install
 
 #### Static IP Address
 
-To connect to the blickfeld over a network switch, the ethernet adapter must be configured to a static ip address. In the terminal, run `ip addr` and identify the name of the ethernet cable (should be eth0). 
-
-Create a new network file: `sudo nano /etc/systemd/network/eth0.network` and add these contents
-
-```network
-[Match]
-Name=eth0
-
-[Network]
-Address=192.168.26.xxx/24
-DNS=8.8.8.8 8.8.4.4
-DHCP=ipv4
-Optional=true
-```
-
-Replace `xxx` with any port number that is not 0, 255, or 26. Replace `eth0` with the name of the ethernet cable if different.
-To permanently apply these changes run 
-
-```console
-sudo systemctl restart systemd-networkd
-sudo systemctl enable systemd-networkd
-```
+To connect to the blickfeld over a network switch, the ethernet adapter must be configured to a static ip address. In the network settings, simply configure eth0 to be a manual IP4 address.
 
 #### Pip Install
 
@@ -92,7 +71,6 @@ To ensure the system boots without interfernce over UART, run `sudo nano /boot/f
 
 ```console
 #dtoverlay=disable-bt
-enable_uart=0
 ```
 
 Remove `console=serial-,115200` and `console=ttyS0,115200` from `/boot/firmware/cmdline.txt` if present.
@@ -115,21 +93,15 @@ To assist the operator in tracking the status of the system without the need to 
 | Red  | Solid  | System is ready/standby |
 | Green  | Solid   | Recording/Saving |
 
-#### HDMI on boot
-
-If no HDMI is plugged into the RPI4, relay.py will not automatically run for some reason. To work around this issue, configure `boot/firmware/config.txt` to always output HDMI even if no output source is detected.
-
-```console
-# Force HDMI even if no monitor is detected
-hdmi_force_hotplug=1
-
-# Uncomment if you have trouble with the Pi detecting your display or outputting
-# hdmi_safe=1
-# hdmi_ignore_edid=0xa5000080
-```
 #### Execute on system boot
 
-Because the python script uses a subprocess/new terminal to execute ROS commands, crontab can't properly execute the commands. Instead, simply add the command `/usr/bin/python3 /path/to/relay_boot.py/file in <strong>Startup Applications</strong>.
+Because the python script uses a subprocess/new terminal to execute ROS commands, crontab can't properly execute the commands. Instead, simply add the command `/usr/bin/python3 /path/to/relay_boot.py/file in /.bashrc.
+
+```console
+nohup gst-launch-1.0 libcamerasrc ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false &
+nohup python3 /home/LAGER/blickfeld/relay_rpi.py
+
+```
 
 #### SSH through LAN
 
@@ -376,10 +348,11 @@ dtoverlay=imx477
 
 To view camera footage, run `gst-launch-1.0 libcamerasrc ! videoconvert ! autovideosink`
 
-To stream camera footage, run `gst-launch-1.0 libcamerasrc ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false` (untested)
+To stream camera footage, run `gst-launch-1.0 libcamerasrc ! videoconvert ! x264enc tune=zerolatency bitrate=5000 speed-preset=superfast ! rtph264pay ! udpsink host=10.223.168.1 port=5001 sync=false`
 
 Ensure doodlelabs is connected through the network switch. Once camera footage is streaing on the receiving host, run `gst-launch-1.0 udpsrc port=5001 caps="application/x-rtp,media=video,clock-rate=90000,encoding-name=H264" ! rtph264depay ! avdec_h264 ! videoconvert ! autovideosink sync=false` to view.
 
+For windows, use C:\gstreamer\1.0\msvc_x86_64\bin\gst-launch-1.0.exe instead of gst-launch-1.0.
 
 ### LAGER specific Deployment Procedure
 
