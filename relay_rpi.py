@@ -9,29 +9,25 @@ from pyubx2 import UBXReader
 
 ### VARIABLES ###
 
-# Set up GPIO pins
-relay_pin = Button(16, pull_up=True)  # Relay switch
-led_standby_pin = LED(25)  # Standby LED
-led_recording_pin = LED(24)  # Recording LED
+# Initialize status LEDs
 
+relay_pin = Button(16, pull_up=False)
+led_standby_pin = LED(25)
+led_recording_pin = LED(24)
 stop_blinking = False
 blink_rate = 0.5
 
-# Turn off LEDs initially
 led_standby_pin.off()
 led_recording_pin.off()
 
-
 # Default GPS port and baud
-ins_port = '/dev/ttyAMA0'
-ins_baud = 38400
+ins_port = '/dev/serial0'
+ins_baud = 230400
 time_init = False
 
-# Variable to track the state of the relay
 relay_state = relay_pin.is_pressed
-
 # ROS commands
-record_command = "/home/LAGER/nile/logger/lidar_logger/build/CloudCap"
+record_command = "./nile/logger/lidar_logger/build/CloudCap"
 
 
 ### FUNCTIONS ###
@@ -42,8 +38,9 @@ def blink_led():
         led_standby_pin.toggle()
         time.sleep(blink_rate)
 
-# When relay switch is flipped
+# When relay switch is Serialflipped
 def relay_status_change():
+
     # Check if relay is turned on
     if relay_pin.is_pressed:
         print("recording")
@@ -52,10 +49,13 @@ def relay_status_change():
 
         led_standby_pin.off()
         led_recording_pin.on()
+        
     else:
+    
+        # Stop recording (terminate the Python script if it's running)
         print("stopped recording")
-        led_recording_pin.off()
         led_standby_pin.on()
+        led_recording_pin.off()
         
         subprocess.Popen(["pkill", "-f", record_command])
         
@@ -125,12 +125,16 @@ led_standby_pin.on()
 ## MAIN LOOP ##
 try:
     while True:    
+    
+        # Check the state of the GPIO pin
         if relay_pin.is_pressed != relay_state:
+            # Relay state has changed
             relay_state = relay_pin.is_pressed
             relay_status_change()
         
         time.sleep(0.01)
         
 except KeyboardInterrupt:
+    # Clean up GPIO on keyboard interrupt
     led_standby_pin.off()
-    led_recording_pin.off()
+    led_recording_pin.off()    
