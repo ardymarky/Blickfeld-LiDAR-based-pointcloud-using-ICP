@@ -1,0 +1,197 @@
+/*
+Tuan Luong
+10/21/2024
+
+Software to save pointcloud and IMU data from blickfeld cube
+*/
+
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <signal.h>
+#include <chrono>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <condition_variable>
+#include <ctime>
+
+
+#include <blickfeld/scanner.h>
+#include <blickfeld/utils.h>
+
+//=======================================================================================
+/*
+Synchronize queue for blickfeld IMU data
+*/
+class ImuQueue {
+    public:
+        ImuQueue();
+
+        void push(blickfeld::protocol::data::IMU const& data);
+        blickfeld::protocol::data::IMU pop();
+
+        void cancel();
+        
+        struct cancelled{};
+
+    private:
+        std::queue<blickfeld::protocol::data::IMU> imu_q_;
+        std::mutex mutex_;
+        std::condition_variable cond_;
+        bool cancelled_;
+};
+
+ImuQueue::ImuQueue()
+    : cancelled_(false){
+
+}
+
+void ImuQueue::cancel() {
+    std::unique_lock<std::mutex> mlock(mutex_);
+    cancelled_ = true;
+    cond_.notify_all();
+}
+
+void ImuQueue::push(blickfeld::protocol::data::IMU const& data){
+    std::unique_lock<std::mutex> mlock(mutex_);
+    imu_q_.push(data);
+    cond_.notify_one();
+}
+
+blickfeld::protocol::data::IMU ImuQueue::pop(){
+    std::unique_lock<std::mutex> mlock(mutex_);
+    while (imu_q_.empty()){
+        if (cancelled_){
+            throw cancelled();
+        }
+        cond_.wait(mlock);
+        if (cancelled_){
+            throw cancelled();
+        }
+    }
+
+    blickfeld::protocol::data::IMU data(imu_q_.front());
+    imu_q_.pop();
+    return data;
+}
+
+// ========================================================
+/*
+Worker to write IMU data
+*/
+
+class ImuWriter{
+    public:
+        ImuWriter (ImuQueue& q
+        , std::string const& file_name);
+
+        void run();
+
+    private:
+        std::ofstream out_file_;
+        ImuQueue& q_;
+        std::string file_name_;
+};
+
+ImuWriter::ImuWriter (ImuQueue& q
+    , std::string const& file_name)
+    : q_(q) {
+    
+    out_file_.open(file_name, std::ios_base::app);
+}
+
+void ImuWriter::run(){
+    try {
+        while(true){
+            blickfeld::protocol::data::IMU data = q_.pop();
+
+            for (auto sample : data.samples()){
+                out_file_<<data.start_time_ns() + sample.start_offset_ns()<<","<<-sample.angular_velocity(0)<<
+                ","<<sample.angular_velocity(1)<<","<<sample.angular_velocity(2)<<","<<-sample.acceleration(0)*9.81<<
+                ","<<sample.acceleration(1)*9.81<<","<<sample.acceleration(2)*9.81<<"\n";
+            }
+
+        }
+    }
+
+    catch (ImuQueue::cancelled&){
+        std::cout<<"Queue cancelled. Worker finished\n";
+        out_file_.close();
+    }
+}
+
+bool exit_sig = false;
+void signalHandler (int signal){
+    std::cout<< "Received SIGINT. Stopping stream." << std::endl;
+    exit_sig = true;
+}
+
+//=========================================
+int main(){
+    
+    // Connect to scanner
+    std::string scanner_ip = "192.168.26.26";
+    
+    std::time_t now = std::time(nullptr);
+    std::tm* local_time = std::localtime(&now);
+    char buffer[50];
+    char buffer2[50];
+    std::strftime(buffer,sizeof(buffer), "%H:%M %F point_cloud.bfpc", local_time);
+    std::strftime(buffer2,sizeof(buffer2), "%H:%M %F imu.bfpc", local_time);
+    std::string output_filename = buffer;
+    std::string imu_output_filename = buffer2;
+    signal(SIGINT, signalHandler);
+
+    // Setup IMu queue and writer
+    ImuQueue imu_q;
+
+    ImuWriter imu_writer(std::ref(imu_q), imu_output_filename);
+
+    std::thread imu_thread(&ImuWriter::run, &imu_writer);
+
+    // Begin connection to scanner
+    std::shared_ptr<blickfeld::scanner> scanner = blickfeld::scanner::connect(scanner_ip);
+
+    std::ofstream dump_stream, imu_dump_stream;
+    dump_stream.open(output_filename, std::ios::out | std::ios::trunc | std::ios::binary);
+
+    auto imu_stream = scanner->get_imu_stream();
+
+    std::shared_ptr<std::thread> scanner_thread = scanner->async_run_thread();
+
+    auto stream = scanner->get_point_cloud_stream();
+
+    stream->record_to_stream(&dump_stream);
+
+    stream->subscribe([scanner](const blickfeld::protocol::data::Frame& frame) {
+        
+   });
+
+
+    auto t1 = std::chrono::system_clock::now();
+    std::cout<<"Begin Blickfeld logging\n";
+    while (true){
+        const blickfeld::protocol::data::IMU imu_dat = imu_stream->recv_burst();
+        imu_q.push(imu_dat);
+        auto cur_time = std::chrono::system_clock::now();
+	
+	if (std::chrono::duration_cast<std::chrono::seconds>(cur_time-t1).count() > 108000){
+	    exit_sig = true;
+	}
+
+        if (exit_sig){
+            std::cout<<"Exit loop\n";
+            break;
+        }
+    }
+    
+    std::cout<<"Cleaning up\n";
+    imu_q.cancel();
+    imu_thread.join();
+    dump_stream.close();
+    scanner_thread->join();
+    
+
+    return 0;
+}
